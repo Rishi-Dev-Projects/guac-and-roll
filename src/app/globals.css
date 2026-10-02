@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+@theme {
+  /* Canvas & Background Colors */
+  --color-canvas-primary: #F8F5EE;
+  --color-canvas-inset: #EFE8DC;
+  --color-canvas-dark: #261C16;
+  --color-canvas-card: #FAF7F0;
+
+  /* Legacy aliases for backward compatibility */
+  --color-espresso-earth: #261C16;
+  --color-adobe-mauve: #8D6E66;
+  --color-celosia-biscuit: #DBC5A6;
+  --color-oatmeal-plaster: #F8F5EE;
+  --color-sage-ceramic: #5F7355;
+  --color-warm-amber: #F5D48A;
+  --color-charcoal-ink: #1C1917;
+
+  /* Typography Fonts */
+  --font-display: var(--font-playfair), Georgia, serif;
+  --font-body: var(--font-plus-jakarta), -apple-system, sans-serif;
+  --font-brand: var(--font-syne), sans-serif;
+
+  /* Shadows (Ambient diffusion, no harsh black drops) */
+  --shadow-diffusion: 0 24px 48px -16px rgba(38, 28, 22, 0.06);
+  --shadow-subtle: 0 4px 16px -2px rgba(38, 28, 22, 0.04);
+  --shadow-glow-amber: 0 0 32px -4px rgba(245, 212, 138, 0.25);
+
+  /* Architectural Radii */
+  --radius-portal: 3.5rem 3.5rem 0 0;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-canvas-primary);
+    color: var(--color-charcoal-ink);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background-color: #DBC5A6;
+    color: #261C16;
+  }
+
+  /* Architectural focus outline: Clean Adobe Mauve outline */
+  :focus-visible {
+    outline: 2px solid var(--color-adobe-mauve);
+    outline-offset: 2px;
+  }
+
+  /* Accessible headings default to display serif */
+  h1, h2, h3 {
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Tabular figures for numbers and prices */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbar on scroll rails (menu tabs, gallery filter, etc.) */
+  .scrollbar-none {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE 11 */
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

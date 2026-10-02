@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="112" fill="#261C16"/>
+  <rect x="16" y="16" width="480" height="480" rx="96" fill="none" stroke="#DBC5A6" stroke-width="6" stroke-opacity="0.25"/>
+  
+  <!-- Architectural Celosia Breeze Block Motif -->
+  <g transform="translate(256, 120)" fill="#DBC5A6">
+    <polygon points="-40,28 0,-40 40,28" fill-opacity="0.95"/>
+    <polygon points="-20,24 0,-16 20,24" fill="#261C16"/>
+  </g>
+
+  <!-- Typography Monogram G&R in Playfair/Serif style -->
+  <text x="256" y="315" text-anchor="middle" font-family="Georgia, 'Playfair Display', serif" font-size="168" font-weight="bold" fill="#F8F5EE" letter-spacing="-3">G&amp;R</text>
+
+  <!-- Cafe Subtitle -->
+  <text x="256" y="395" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="38" font-weight="700" fill="#DBC5A6" letter-spacing="14">CAFE</text>
+</svg>
