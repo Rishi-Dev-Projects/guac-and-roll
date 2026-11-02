@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import { X, ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
@@ -79,11 +79,27 @@ export const galleryPhotos: GalleryPhoto[] = [
   },
 ];
 
+/**
+ * Directional image transition. `custom` is undefined when the whole dialog
+ * exits via the outer AnimatePresence — default the direction so the exit
+ * never resolves to NaN (which would leave the overlay mounted).
+ */
+const slideVariants = {
+  enter: (d: number = 1) => ({ opacity: 0, x: d * 80, rotateY: d * -10 }),
+  center: { opacity: 1, x: 0, rotateY: 0 },
+  exit: (d: number = 1) => ({ opacity: 0, x: d * -80, rotateY: d * 10 }),
+};
+
 type CategoryFilter = "All" | "Architecture" | "Interior" | "Culinary" | "Menu Artifact";
 
 export function GalleryLightbox() {
   const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>("All");
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [direction, setDirection] = useState(1);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
+  const swipeRef = useRef<{ x: number; y: number } | null>(null);
 
   const filteredPhotos =
     selectedCategory === "All"
@@ -94,11 +110,13 @@ export function GalleryLightbox() {
 
   const handleNext = useCallback(() => {
     if (activeIndex === null) return;
+    setDirection(1);
     setActiveIndex((prev) => (prev !== null && prev < filteredPhotos.length - 1 ? prev + 1 : 0));
   }, [activeIndex, filteredPhotos.length]);
 
   const handlePrev = useCallback(() => {
     if (activeIndex === null) return;
+    setDirection(-1);
     setActiveIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : filteredPhotos.length - 1));
   }, [activeIndex, filteredPhotos.length]);
 
@@ -106,11 +124,36 @@ export function GalleryLightbox() {
     setActiveIndex(null);
   }, []);
 
+  const isOpen = activeIndex !== null;
+
+  // Focus: move into the dialog on open; restore to the opening tile on close.
+  useEffect(() => {
+    if (isOpen) {
+      closeRef.current?.focus();
+    } else if (openerRef.current) {
+      openerRef.current.focus();
+      openerRef.current = null;
+    }
+  }, [isOpen]);
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (activeIndex === null) return;
       if (e.key === "Escape") handleClose();
+      if (e.key === "Tab" && dialogRef.current) {
+        const f = dialogRef.current.querySelectorAll<HTMLElement>("button:not([disabled]), a[href]");
+        if (f.length === 0) return;
+        const first = f[0];
+        const last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
       if (e.key === "ArrowRight") handleNext();
       if (e.key === "ArrowLeft") handlePrev();
     };
@@ -211,10 +254,19 @@ export function GalleryLightbox() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] as const }}
-              className={`${colSpan} group cursor-pointer`}
-              onClick={() => setActiveIndex(index)}
+              className={`${colSpan}`}
             >
-              <div className="relative overflow-hidden rounded-2xl bg-[#EFE8DC]/50 border border-[#261C16]/10 transition-all duration-500 group-hover:border-[#261C16]/30 group-hover:shadow-[0_20px_40px_-15px_rgba(38,28,22,0.08)]">
+              <button
+                type="button"
+                onClick={(e) => {
+                  openerRef.current = e.currentTarget;
+                  setDirection(1);
+                  setActiveIndex(index);
+                }}
+                aria-label={`Open photograph: ${photo.title}`}
+                className="group block w-full text-left cursor-pointer rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-4 [perspective:1200px]"
+              >
+              <div className="relative overflow-hidden rounded-2xl transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:[transform:rotateX(2deg)_translateY(-4px)] bg-[#EFE8DC]/50 border border-[#261C16]/10 transition-all duration-500 group-hover:border-[#261C16]/30 group-hover:shadow-[0_20px_40px_-15px_rgba(38,28,22,0.08)]">
                 {/* Image Container */}
                 <div
                   className={`relative w-full overflow-hidden ${
@@ -259,6 +311,7 @@ export function GalleryLightbox() {
                   </p>
                 </div>
               </div>
+              </button>
             </motion.div>
           );
         })}
@@ -281,25 +334,57 @@ export function GalleryLightbox() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.96, opacity: 0 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
+              ref={dialogRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="lightbox-title"
               className="relative w-full max-w-5xl max-h-[90vh] flex flex-col md:flex-row bg-[#F8F5EE] rounded-3xl overflow-hidden shadow-2xl border border-white/20"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Image Preview Side */}
-              <div className="relative w-full md:w-3/5 min-h-[300px] sm:min-h-[400px] md:min-h-[500px] bg-[#261C16] flex items-center justify-center">
-                <Image
-                  src={currentPhoto.src}
-                  alt={currentPhoto.title}
-                  fill
-                  priority
-                  sizes="(max-width: 768px) 100vw, 60vw"
-                  className="object-contain"
-                />
+              <div
+                className="relative w-full md:w-3/5 min-h-[300px] sm:min-h-[400px] md:min-h-[500px] bg-[#261C16] flex items-center justify-center overflow-hidden touch-pan-y [perspective:1400px]"
+                onPointerDown={(e) => {
+                  swipeRef.current = { x: e.clientX, y: e.clientY };
+                }}
+                onPointerUp={(e) => {
+                  const s = swipeRef.current;
+                  swipeRef.current = null;
+                  if (!s) return;
+                  const dx = e.clientX - s.x;
+                  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(e.clientY - s.y) * 1.3) {
+                    if (dx < 0) handleNext();
+                    else handlePrev();
+                  }
+                }}
+              >
+                <AnimatePresence initial={false} custom={direction}>
+                  <motion.div
+                    key={currentPhoto.id}
+                    custom={direction}
+                    variants={slideVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                    className="absolute inset-0"
+                  >
+                    <Image
+                      src={currentPhoto.src}
+                      alt={currentPhoto.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 60vw"
+                      className="object-contain select-none"
+                      draggable={false}
+                    />
+                  </motion.div>
+                </AnimatePresence>
 
                 {/* Nav Arrows inside image for mobile */}
                 <button
                   type="button"
                   onClick={handlePrev}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-all backdrop-blur-sm"
+                  className="absolute z-10 left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-all backdrop-blur-sm"
                   aria-label="Previous image"
                 >
                   <ChevronLeft className="w-5 h-5" />
@@ -307,7 +392,7 @@ export function GalleryLightbox() {
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-all backdrop-blur-sm"
+                  className="absolute z-10 right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-all backdrop-blur-sm"
                   aria-label="Next image"
                 >
                   <ChevronRight className="w-5 h-5" />
@@ -323,10 +408,11 @@ export function GalleryLightbox() {
                       ARCHIVAL MOMENT {String(activeIndex + 1).padStart(2, "0")} / {String(filteredPhotos.length).padStart(2, "0")}
                     </span>
                     <button
+                      ref={closeRef}
                       type="button"
                       onClick={handleClose}
-                      className="w-8 h-8 rounded-full bg-[#261C16]/5 hover:bg-[#261C16] hover:text-[#F8F5EE] text-[#261C16] flex items-center justify-center transition-colors"
-                      aria-label="Close modal"
+                      className="w-11 h-11 rounded-full bg-[#261C16]/5 hover:bg-[#261C16] hover:text-[#F8F5EE] text-[#261C16] flex items-center justify-center transition-colors"
+                      aria-label="Close photograph"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -336,7 +422,7 @@ export function GalleryLightbox() {
                     {currentPhoto.category}
                   </span>
 
-                  <h2 className="font-[family-name:var(--font-playfair)] text-2xl sm:text-3xl font-bold text-[#261C16] leading-tight">
+                  <h2 id="lightbox-title" className="font-[family-name:var(--font-playfair)] text-2xl sm:text-3xl font-bold text-[#261C16] leading-tight">
                     {currentPhoto.title}
                   </h2>
 
@@ -360,14 +446,16 @@ export function GalleryLightbox() {
                     <button
                       type="button"
                       onClick={handlePrev}
-                      className="px-3 py-1.5 rounded-lg border border-[#261C16]/20 hover:bg-[#261C16] hover:text-[#F8F5EE] transition-colors"
+                      aria-label="Previous photograph"
+                      className="min-h-[44px] px-4 py-1.5 rounded-lg border border-[#261C16]/20 hover:bg-[#261C16] hover:text-[#F8F5EE] transition-colors"
                     >
                       Prev
                     </button>
                     <button
                       type="button"
                       onClick={handleNext}
-                      className="px-3 py-1.5 rounded-lg border border-[#261C16]/20 hover:bg-[#261C16] hover:text-[#F8F5EE] transition-colors"
+                      aria-label="Next photograph"
+                      className="min-h-[44px] px-4 py-1.5 rounded-lg border border-[#261C16]/20 hover:bg-[#261C16] hover:text-[#F8F5EE] transition-colors"
                     >
                       Next
                     </button>

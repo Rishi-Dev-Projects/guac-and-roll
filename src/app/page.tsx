@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { HeroSection } from "@/sections/HeroSection";
 import { ArchwayThreshold } from "@/sections/ArchwayThreshold";
 import { SpatialCafeSection } from "@/sections/SpatialCafeSection";
+import { CulinarySpotlightSection } from "@/sections/CulinarySpotlightSection";
 import { EditorialMenuSection } from "@/sections/EditorialMenuSection";
 import { SocialRitualSection } from "@/sections/SocialRitualSection";
 import { CuratedGallerySection } from "@/sections/CuratedGallerySection";
@@ -22,25 +23,28 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* 1. Primary Benchmark: The Architectural Threshold Hero */}
+      {/* ARRIVAL — 1. The shopfront comes into view */}
       <HeroSection />
 
-      {/* 2. Hero-to-Content Breathing Transition */}
+      {/* ENTERING — 2. Through the arched door (pinned camera sequence) */}
       <ArchwayThreshold />
 
-      {/* 3. Spatial Cafe Storytelling: Chapter 02 (The Physical Sanctuary) */}
+      {/* DISCOVERING THE SPACE — 3. Chapter 02: One arch, three times */}
       <SpatialCafeSection />
 
-      {/* 4. Interactive Editorial Menu: Chapter 03 (The Culinary Repertoire) */}
+      {/* EXPLORING THE FOOD — 4. Chapter 03: The Culinary Spotlight */}
+      <CulinarySpotlightSection />
+
+      {/* BROWSING THE MENU — 5. Chapter 04: The Menu Folio */}
       <EditorialMenuSection />
 
-      {/* 5. The Social Ritual: Chapter 04 (Between Class & Twilight) */}
+      {/* EXPERIENCING THE ATMOSPHERE — 6. Chapter 05: The Social Ritual */}
       <SocialRitualSection />
 
-      {/* 6. Visual Evidence: Chapter 05 (Through the Architectural Lens) */}
+      {/* 7. Chapter 06: The Memory Ribbon */}
       <CuratedGallerySection />
 
-      {/* 7. Local Business Conversion: Chapter 06 (Come Find The Sign) */}
+      {/* VISITING — 8. Chapter 07: Come Find The Sign */}
       <LocalConversionSection />
     </>
   );

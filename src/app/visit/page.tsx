@@ -16,7 +16,7 @@ import {
   getWhatsAppUrl,
 } from "@/data/site";
 import { constructMetadata, getLocalBusinessSchema } from "@/lib/seo";
-import { MapPin, Clock, ArrowUpRight, MessageCircle, Star, Compass } from "lucide-react";
+import { MapPin, Clock, ArrowUpRight, MessageCircle, Star, Compass, Phone } from "lucide-react";
 import { InstagramIcon } from "@/components/icons/InstagramIcon";
 
 export const metadata: Metadata = constructMetadata({
@@ -177,6 +177,16 @@ export default function VisitPage() {
                   >
                     <span>Get Directions (Google Maps)</span>
                     <ArrowUpRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </Button>
+
+                  <Button
+                    href={siteConfig.contact.phoneHref}
+                    variant="outline"
+                    size="md"
+                    shape="architectural"
+                  >
+                    <Phone className="w-4 h-4" />
+                    <span className="tabular-nums">Call {siteConfig.contact.phoneDisplay}</span>
                   </Button>
 
                   <CopyAddressButton address={siteConfig.location.formattedAddress} />

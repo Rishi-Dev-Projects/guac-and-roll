@@ -12,7 +12,7 @@ import {
   isWhatsAppConfigured,
   getWhatsAppUrl,
 } from "@/data/site";
-import { MapPin, Clock, ArrowUpRight, MessageCircle, Star } from "lucide-react";
+import { MapPin, Clock, ArrowUpRight, MessageCircle, Star, Phone } from "lucide-react";
 import { InstagramIcon } from "@/components/icons/InstagramIcon";
 
 export function LocalConversionSection() {
@@ -28,7 +28,7 @@ export function LocalConversionSection() {
           <div className="space-y-3 max-w-2xl">
             <div className="flex items-center gap-3">
               <span className="font-[family-name:var(--font-syne)] text-[10px] sm:text-xs uppercase tracking-[0.24em] font-bold text-[#8D6E66]">
-                CHAPTER 06 · THE LOCAL ARRIVAL
+                CHAPTER 07 · THE LOCAL ARRIVAL
               </span>
               <span className="text-[#261C16]/20">/</span>
               <span className="text-xs uppercase tracking-wider text-[#7D6F66] font-medium font-[family-name:var(--font-syne)]">
@@ -94,6 +94,16 @@ export function LocalConversionSection() {
                 >
                   <span>Get Directions (Google Maps)</span>
                   <ArrowUpRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </Button>
+
+                <Button
+                  href={siteConfig.contact.phoneHref}
+                  variant="outline"
+                  size="md"
+                  shape="architectural"
+                >
+                  <Phone className="w-4 h-4" />
+                  <span className="tabular-nums">Call {siteConfig.contact.phoneDisplay}</span>
                 </Button>
 
                 <CopyAddressButton address={siteConfig.location.formattedAddress} />

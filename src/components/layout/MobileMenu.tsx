@@ -1,16 +1,25 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, MapPin, Clock } from "lucide-react";
+import { Menu, X, MapPin, Clock, Phone } from "lucide-react";
 import { siteConfig } from "@/data/site";
 import { Button } from "@/components/primitives/Button";
 
 export function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  // Portal target is only available on the client (hydration-safe, no setState-in-effect).
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
   const pathname = usePathname();
   const [prevPathname, setPrevPathname] = useState(pathname);
 
@@ -19,9 +28,15 @@ export function MobileMenu() {
     setIsOpen(false);
   }
 
+  // Focus management: move focus into the drawer on open, return it on close.
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    if (isOpen) {
+      closeRef.current?.focus();
+    } else if (wasOpen.current) {
+      toggleRef.current?.focus();
+    }
+    wasOpen.current = isOpen;
+  }, [isOpen]);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -40,6 +55,23 @@ export function MobileMenu() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setIsOpen(false);
+        return;
+      }
+      // Keep Tab focus inside the open drawer.
+      if (e.key === "Tab" && drawerRef.current) {
+        const focusables = drawerRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled])'
+        );
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     };
     if (isOpen) {
@@ -54,6 +86,7 @@ export function MobileMenu() {
     <div className="md:hidden">
       {/* Toggle button */}
       <button
+        ref={toggleRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
@@ -77,6 +110,9 @@ export function MobileMenu() {
 
           {/* Drawer */}
           <div
+            ref={drawerRef}
+            inert={!isOpen}
+            aria-hidden={!isOpen}
             className={`fixed top-0 right-0 bottom-0 z-50 w-full max-w-xs bg-[#F8F5EE] border-l border-[#261C16]/10 p-6 flex flex-col justify-between transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-[0_24px_48px_-16px_rgba(38,28,22,0.18)] ${
               isOpen ? "translate-x-0" : "translate-x-full"
             }`}
@@ -96,10 +132,11 @@ export function MobileMenu() {
                   </span>
                 </div>
                 <button
+                  ref={closeRef}
                   type="button"
                   onClick={() => setIsOpen(false)}
                   aria-label="Close navigation menu"
-                  className="p-2 rounded-lg text-[#261C16] hover:bg-[#261C16]/5 transition-colors"
+                  className="p-2.5 rounded-lg text-[#261C16] hover:bg-[#261C16]/5 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -139,6 +176,14 @@ export function MobileMenu() {
                 <Clock className="w-4 h-4 text-[#8D6E66] shrink-0" />
                 <span>{siteConfig.hours.days}: {siteConfig.hours.formatted}</span>
               </div>
+
+              <a
+                href={siteConfig.contact.phoneHref}
+                className="flex items-center gap-2.5 min-h-[44px] font-semibold text-[#261C16] tabular-nums"
+              >
+                <Phone className="w-4 h-4 text-[#8D6E66] shrink-0" />
+                <span>Call {siteConfig.contact.phoneDisplay}</span>
+              </a>
 
               <Button
                 href={siteConfig.location.googleMapsShareUrl}

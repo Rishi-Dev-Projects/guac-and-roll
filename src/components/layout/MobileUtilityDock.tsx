@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { siteConfig, isWhatsAppConfigured, getWhatsAppUrl } from "@/data/site";
-import { MapPin, BookOpen, MessageCircle } from "lucide-react";
+import { MapPin, BookOpen, MessageCircle, Phone } from "lucide-react";
 import { InstagramIcon } from "@/components/icons/InstagramIcon";
 
 export function MobileUtilityDock() {
@@ -42,7 +42,19 @@ export function MobileUtilityDock() {
           </span>
         </Link>
 
-        {/* 3. Instagram */}
+        {/* 3. Call */}
+        <a
+          href={siteConfig.contact.phoneHref}
+          className="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] px-2 py-1 text-white/80 hover:text-white active:scale-95 transition-all text-center"
+          aria-label={`Call Guac N' Roll Cafe on ${siteConfig.contact.phoneDisplay}`}
+        >
+          <Phone className="w-4 h-4 mb-0.5 text-[#DBC5A6]" />
+          <span className="font-[family-name:var(--font-syne)] text-[9px] uppercase tracking-wider font-semibold">
+            Call
+          </span>
+        </a>
+
+        {/* 4. Instagram */}
         <a
           href={siteConfig.social.instagram}
           target="_blank"
@@ -56,7 +68,7 @@ export function MobileUtilityDock() {
           </span>
         </a>
 
-        {/* 4. WhatsApp (Strictly Gated - Only rendered when real number configured) */}
+        {/* 5. WhatsApp (Strictly Gated - Only rendered when real number configured) */}
         {whatsappConfigured && whatsappUrl && (
           <a
             href={whatsappUrl}

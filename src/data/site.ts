@@ -41,6 +41,13 @@ export const siteConfig = {
     formatted: "11:00 AM – 11:00 PM",
   },
 
+  // Direct Contact (Confirmed by owner in the Phase 7 brief)
+  contact: {
+    phoneDisplay: "83200 02128",
+    phoneE164: "+918320002128",
+    phoneHref: "tel:+918320002128",
+  },
+
   // Social & Community Links
   social: {
     instagram: "https://www.instagram.com/guacnroll.cafe",
@@ -62,7 +69,6 @@ export const siteConfig = {
   // ============================================================================
   placeholders: {
     domain: "TODO_DOMAIN",
-    phone: "TODO_PHONE_NUMBER",
     whatsapp: "TODO_WHATSAPP_NUMBER",
     email: "TODO_BUSINESS_EMAIL",
     reservationStatus: "TODO_RESERVATION_STATUS",
