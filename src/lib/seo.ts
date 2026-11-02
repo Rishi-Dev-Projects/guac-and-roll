@@ -133,6 +133,7 @@ export function getLocalBusinessSchema() {
     description: siteConfig.description,
     image: `${currentUrl}/images/brand/logo-neon.jpg`,
     url: currentUrl,
+    telephone: siteConfig.contact.phoneE164,
     address: {
       "@type": "PostalAddress",
       streetAddress: `${siteConfig.location.shop}, ${siteConfig.location.building}, ${siteConfig.location.street}`,

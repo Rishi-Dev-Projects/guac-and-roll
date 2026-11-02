@@ -4,6 +4,7 @@ import { Navigation } from "@/components/layout/Navigation";
 import { Footer } from "@/components/layout/Footer";
 import { MobileUtilityDock } from "@/components/layout/MobileUtilityDock";
 import { constructMetadata } from "@/lib/seo";
+import { MotionProvider } from "@/components/motion/MotionProvider";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -51,7 +52,7 @@ export default function RootLayout({
 
         {/* Main page content container with mobile dock padding */}
         <main id="main-content" className="flex-grow pb-24 md:pb-0">
-          {children}
+          <MotionProvider>{children}</MotionProvider>
         </main>
 
         {/* Global architectural footer */}

@@ -39,7 +39,7 @@ export function SocialRitualSection() {
           <div className="space-y-3 max-w-2xl">
             <div className="flex items-center gap-3">
               <span className="font-[family-name:var(--font-syne)] text-[10px] sm:text-xs uppercase tracking-[0.24em] font-bold text-[#8D6E66]">
-                CHAPTER 04 · THE SOCIAL RITUAL
+                CHAPTER 05 · THE SOCIAL RITUAL
               </span>
               <span className="text-[#261C16]/20">/</span>
               <span className="text-xs uppercase tracking-wider text-[#7D6F66] font-medium font-[family-name:var(--font-syne)]">

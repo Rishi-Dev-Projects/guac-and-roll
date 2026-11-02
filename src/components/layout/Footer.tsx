@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Container } from "@/components/primitives/Container";
 import { Divider } from "@/components/primitives/Divider";
 import { siteConfig } from "@/data/site";
-import { MapPin, Clock, ArrowUpRight } from "lucide-react";
+import { MapPin, Clock, ArrowUpRight, Phone } from "lucide-react";
 import { InstagramIcon } from "@/components/icons/InstagramIcon";
 
 export function Footer() {
@@ -69,6 +69,17 @@ export function Footer() {
               </div>
 
               <div className="flex items-start gap-2.5 pt-1">
+                <Phone className="w-4 h-4 mt-0.5 text-[#DBC5A6] shrink-0" />
+                <a
+                  href={siteConfig.contact.phoneHref}
+                  className="text-xs sm:text-sm text-[#F8F5EE] hover:text-[#DBC5A6] transition-colors tabular-nums"
+                  aria-label={`Call Guac N' Roll Cafe on ${siteConfig.contact.phoneDisplay}`}
+                >
+                  {siteConfig.contact.phoneDisplay}
+                </a>
+              </div>
+
+              <div className="flex items-start gap-2.5 pt-1">
                 <Clock className="w-4 h-4 mt-1 text-[#DBC5A6] shrink-0" />
                 <div>
                   <p className="font-medium text-[#F8F5EE] text-xs sm:text-sm">{siteConfig.hours.days}</p>
@@ -98,13 +109,13 @@ export function Footer() {
                 href={siteConfig.social.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between p-3 rounded-lg bg-[#F8F5EE]/5 border border-[#F8F5EE]/10 hover:border-[#DBC5A6]/40 hover:bg-[#F8F5EE]/10 transition-all text-xs group"
+                className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 p-3 rounded-lg bg-[#F8F5EE]/5 border border-[#F8F5EE]/10 hover:border-[#DBC5A6]/40 hover:bg-[#F8F5EE]/10 transition-all text-xs group"
               >
                 <div className="flex items-center gap-2">
                   <InstagramIcon className="w-3.5 h-3.5 text-[#DBC5A6]" />
                   <span>Instagram</span>
                 </div>
-                <span className="text-[10px] text-[#DBC5A6]">{siteConfig.social.instagramHandle}</span>
+                <span className="text-[10px] text-[#DBC5A6] min-w-0 break-all">{siteConfig.social.instagramHandle}</span>
               </a>
             </div>
           </div>

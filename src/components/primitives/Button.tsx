@@ -51,6 +51,14 @@ export function Button({
   const combinedClasses = `${baseClasses} ${shapeClasses[shape]} ${sizeClasses[size]} ${variantClasses[variant]} ${className}`;
 
   if (href) {
+    // Protocol links (phone, email) are plain anchors — never routed or opened in a new tab.
+    if (/^(tel|mailto):/.test(href)) {
+      return (
+        <a href={href} className={combinedClasses}>
+          {children}
+        </a>
+      );
+    }
     if (isExternal) {
       return (
         <a

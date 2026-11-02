@@ -1,44 +1,76 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "motion/react";
+import {
+  motion,
+  useMotionTemplate,
+  useMotionValue,
+  useSpring,
+  useTransform,
+} from "motion/react";
 import { Container } from "@/components/primitives/Container";
 import { Button } from "@/components/primitives/Button";
 import { CelosiaPattern } from "@/components/icons/CelosiaPattern";
-import { imageReveal, textReveal } from "@/lib/motion";
+import { useScrubProgress } from "@/components/motion/useScrubProgress";
+import { useFinePointer } from "@/lib/useMediaQuery";
+import { textReveal } from "@/lib/motion";
 import { MapPin, Clock, ArrowRight } from "lucide-react";
 
+const SPRING = { stiffness: 120, damping: 20, mass: 0.6 };
+
 export function HeroSection() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  
-  const [isMobile, setIsMobile] = useState(true);
+  const containerRef = useRef<HTMLElement>(null);
+  const fine = useFinePointer();
 
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile(); // Check immediately on mount
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  // Scroll: the hero lifts away while the shopfront dollies slightly forward.
+  // Under reduced motion progress holds at 0 (no movement at all).
+  const { progress, reduced } = useScrubProgress(containerRef, ["start start", "end start"], 0);
+  const textY = useTransform(progress, [0, 1], [0, -70]);
+  const textOpacity = useTransform(progress, [0, 0.8], [1, 0.35]);
+  const portalScale = useTransform(progress, [0, 1], [1, 1.06]);
+  const portalY = useTransform(progress, [0, 1], [0, 40]);
+  const patternX = useTransform(progress, [0, 1], [0, 30]);
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end start"],
-  });
+  // Pointer depth: two real photographic planes separate in Z.
+  const px = useMotionValue(0);
+  const py = useMotionValue(0);
+  const sx = useSpring(px, SPRING);
+  const sy = useSpring(py, SPRING);
+  const tiltY = useTransform(sx, (v) => v * 3.5);
+  const tiltX = useTransform(sy, (v) => v * -3);
+  const backX = useTransform(sx, (v) => v * -10);
+  const backY = useTransform(sy, (v) => v * -8);
+  const frontX = useTransform(sx, (v) => v * 16);
+  const frontY = useTransform(sy, (v) => v * 12);
+  const lightX = useTransform(sx, (v) => 40 + v * 22);
+  const lightY = useTransform(sy, (v) => 38 + v * 18);
+  const light = useMotionTemplate`radial-gradient(circle at ${lightX}% ${lightY}%, rgba(245, 212, 138, 0.24) 0%, transparent 58%)`;
 
-  // Background pattern shift
-  const patternX = useTransform(scrollYProgress, [0, 1], [0, isMobile ? 0 : 30]);
+  const interactive = fine && !reduced;
 
-  // Ambient light diagonal drift (using x and y translates)
-  const lightX = useTransform(scrollYProgress, [0, 1], [0, isMobile ? 0 : 40]);
-  const lightY = useTransform(scrollYProgress, [0, 1], [0, isMobile ? 0 : 60]);
+  const onPointerMove = (e: React.PointerEvent<HTMLElement>) => {
+    if (!interactive || e.pointerType !== "mouse") return;
+    const r = e.currentTarget.getBoundingClientRect();
+    px.set(((e.clientX - r.left) / r.width) * 2 - 1);
+    py.set(((e.clientY - r.top) / r.height) * 2 - 1);
+  };
+  const onPointerLeave = () => {
+    px.set(0);
+    py.set(0);
+  };
 
   return (
-    <section ref={containerRef} className="relative w-full overflow-hidden bg-[#F8F5EE] border-b border-[#261C16]/10 pt-8 pb-16 md:pt-16 md:pb-24 lg:pt-20 lg:pb-28 min-h-[92dvh] flex flex-col justify-center">
+    <section
+      ref={containerRef}
+      onPointerMove={onPointerMove}
+      onPointerLeave={onPointerLeave}
+      className="relative w-full overflow-hidden bg-[#F8F5EE] border-b border-[#261C16]/10 pt-8 pb-16 md:pt-16 md:pb-24 lg:pt-20 lg:pb-28 min-h-[92dvh] flex flex-col justify-center"
+    >
       {/* Background Subtle Architectural Motif (3% opacity) */}
       <motion.div
-        className="absolute top-0 right-0 w-96 h-96 pointer-events-none opacity-[0.035] overflow-hidden select-none will-change-transform"
+        className="hidden md:block absolute top-0 right-0 w-96 h-96 pointer-events-none opacity-[0.035] overflow-hidden select-none"
         aria-hidden="true"
         style={{ x: patternX }}
       >
@@ -54,15 +86,15 @@ export function HeroSection() {
             initial="hidden"
             animate="visible"
             variants={{
-              hidden: { opacity: 0 },
+              hidden: {},
               visible: {
-                opacity: 1,
                 transition: {
                   staggerChildren: 0.09,
                   delayChildren: 0.05,
                 },
               },
             }}
+            style={{ y: textY, opacity: textOpacity }}
             className="lg:col-span-7 flex flex-col space-y-6 md:space-y-8"
           >
             {/* Eyebrow Spatial Index */}
@@ -169,75 +201,94 @@ export function HeroSection() {
           </motion.div>
 
           {/* ============================================================
-              RIGHT COLUMN (5 cols): Dominant Architectural Exterior Image
+              RIGHT COLUMN (5 cols): The shopfront as a spatial stage.
+              Back plane: facade photograph. Front plane: neon lettering.
               ============================================================ */}
           <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={imageReveal}
-            className="lg:col-span-5 relative mt-6 lg:mt-0"
+            style={{ scale: portalScale, y: portalY }}
+            className="lg:col-span-5 relative mt-6 lg:mt-0 [perspective:1200px]"
           >
-            {/* The Main Architectural Arched Portal Frame */}
-            <div className="relative w-full rounded-t-[3.5rem] sm:rounded-t-[4.5rem] rounded-b-2xl overflow-hidden bg-[#261C16]/5 border border-[#261C16]/12 shadow-[0_24px_48px_-16px_rgba(38,28,22,0.12)]">
-              {/* Aspect Ratio Box */}
-              <div className="relative w-full aspect-[4/5] sm:aspect-[3/4] lg:aspect-[4/5] overflow-hidden">
-                <Image
-                  src="/images/cafe/facade-exterior.png"
-                  alt="Guac N' Roll Cafe exterior breeze-block celosia screen wall and arched entrance in Bardoli"
-                  fill
-                  priority
-                  loading="eager"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 45vw, 40vw"
-                  className="object-cover object-center transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.025]"
-                />
-                {/* Daylight Shift Ambient Light Gradient */}
-                <motion.div 
-                  className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] pointer-events-none will-change-transform mix-blend-overlay"
-                  style={{ 
-                    x: lightX, 
-                    y: lightY,
-                    background: "radial-gradient(circle at 40% 40%, rgba(245, 212, 138, 0.15) 0%, transparent 60%)" 
-                  }}
-                />
-              </div>
-
-              {/* Inset Architectural Caption Tag */}
-              <div className="p-4 sm:p-5 bg-[#F8F5EE] border-t border-[#261C16]/10 flex items-center justify-between">
-                <div>
-                  <p className="font-[family-name:var(--font-playfair)] font-bold text-sm sm:text-base text-[#261C16]">
-                    The Celosia Facade
-                  </p>
-                  <p className="text-[11px] text-[#7D6F66]">
-                    Shop 9 & 10 · Ambiance Twin City, Bardoli
-                  </p>
-                </div>
-                <Link
-                  href="/gallery"
-                  className="text-xs uppercase tracking-wider font-semibold text-[#8D6E66] hover:text-[#261C16] transition-colors"
-                >
-                  Gallery →
-                </Link>
-              </div>
-            </div>
-
-            {/* Layered Detail: Illuminated Neon Signage Detail Thumbnail (Desktop & Tablet) */}
-            <div
-              className="hidden sm:block absolute -bottom-6 -left-8 lg:-bottom-8 lg:-left-10 w-36 h-36 sm:w-40 sm:h-40 rounded-2xl overflow-hidden border-4 border-[#F8F5EE] shadow-[0_16px_36px_-10px_rgba(38,28,22,0.3)] bg-[#0D0B0A]"
-              title="Illuminated GUAC N' ROLL Neon Signage"
+            <motion.div
+              style={interactive ? { rotateX: tiltX, rotateY: tiltY } : undefined}
+              className="relative [transform-style:preserve-3d]"
             >
-              <Image
-                src="/images/brand/logo-neon.jpg"
-                alt="Illuminated GUAC N' ROLL warm neon typography"
-                fill
-                sizes="160px"
-                className="object-cover transition-transform duration-500 hover:scale-105"
-              />
-              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2 text-center">
-                <span className="font-[family-name:var(--font-syne)] text-[9px] uppercase tracking-[0.2em] font-bold text-[#F5D48A]">
-                  Night Glow
-                </span>
-              </div>
-            </div>
+              {/* The Main Architectural Arched Portal Frame — rises into view */}
+              <motion.div
+                initial={{ clipPath: "inset(24% 0% 0% 0%)" }}
+                animate={{ clipPath: "inset(0% 0% 0% 0%)" }}
+                transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+                className="relative w-full rounded-t-[3.5rem] sm:rounded-t-[4.5rem] rounded-b-2xl overflow-hidden bg-[#261C16]/5 border border-[#261C16]/12 shadow-[0_24px_48px_-16px_rgba(38,28,22,0.12)]"
+              >
+                {/* Aspect Ratio Box */}
+                <div className="relative w-full aspect-[4/5] sm:aspect-[3/4] lg:aspect-[4/5] overflow-hidden">
+                  <motion.div
+                    className="absolute -inset-[4%]"
+                    style={interactive ? { x: backX, y: backY } : undefined}
+                  >
+                    <Image
+                      src="/images/cafe/facade-exterior.png"
+                      alt="Guac N' Roll Cafe exterior breeze-block celosia screen wall and arched entrance in Bardoli"
+                      fill
+                      loading="eager"
+                      fetchPriority="high"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 45vw, 40vw"
+                      className="object-cover object-center"
+                    />
+                  </motion.div>
+                  {/* Ambient amber light — follows the pointer on desktop */}
+                  <motion.div
+                    aria-hidden="true"
+                    className="absolute inset-0 pointer-events-none mix-blend-overlay"
+                    style={{ background: light }}
+                  />
+                </div>
+
+                {/* Inset Architectural Caption Tag */}
+                <div className="p-4 sm:p-5 bg-[#F8F5EE] border-t border-[#261C16]/10 flex items-center justify-between">
+                  <div>
+                    <p className="font-[family-name:var(--font-playfair)] font-bold text-sm sm:text-base text-[#261C16]">
+                      The Celosia Facade
+                    </p>
+                    <p className="text-[11px] text-[#7D6F66]">
+                      Shop 9 &amp; 10 · Ambiance Twin City, Bardoli
+                    </p>
+                  </div>
+                  <Link
+                    href="/gallery"
+                    className="min-h-[44px] inline-flex items-center text-xs uppercase tracking-wider font-semibold text-[#8D6E66] hover:text-[#261C16] transition-colors"
+                  >
+                    Gallery →
+                  </Link>
+                </div>
+              </motion.div>
+
+              {/* Front plane: Illuminated neon lettering, lifted in Z (Desktop & Tablet) */}
+              <motion.div
+                className="hidden sm:block absolute -bottom-6 -left-8 lg:-bottom-8 lg:-left-10 w-36 h-36 sm:w-40 sm:h-40"
+                style={interactive ? { x: frontX, y: frontY, z: 70 } : undefined}
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.55 }}
+                  className="relative w-full h-full rounded-2xl overflow-hidden border-4 border-[#F8F5EE] shadow-[0_22px_44px_-12px_rgba(38,28,22,0.38)] bg-[#0D0B0A]"
+                  title="Illuminated GUAC N' ROLL Neon Signage"
+                >
+                  <Image
+                    src="/images/brand/logo-neon.jpg"
+                    alt="Illuminated GUAC N' ROLL warm neon typography"
+                    fill
+                    sizes="160px"
+                    className="object-cover"
+                  />
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2 text-center">
+                    <span className="font-[family-name:var(--font-syne)] text-[9px] uppercase tracking-[0.2em] font-bold text-[#F5D48A]">
+                      Night Glow
+                    </span>
+                  </div>
+                </motion.div>
+              </motion.div>
+            </motion.div>
           </motion.div>
         </div>
       </Container>
