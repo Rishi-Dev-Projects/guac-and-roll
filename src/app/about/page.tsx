@@ -10,6 +10,7 @@ import { Button } from "@/components/primitives/Button";
 import { CelosiaPattern } from "@/components/icons/CelosiaPattern";
 import { siteConfig } from "@/data/site";
 import { constructMetadata } from "@/lib/seo";
+import { OwnerSection } from "@/components/about/OwnerSection";
 import { ArrowUpRight } from "lucide-react";
 
 export const metadata: Metadata = constructMetadata({
@@ -18,45 +19,6 @@ export const metadata: Metadata = constructMetadata({
     "Learn about the atmosphere, spatial design, and culinary concept of Guac N' Roll Cafe in Baben, Bardoli. Featuring terracotta breeze blocks, arched dining spaces, and Mexican-inspired comfort.",
   path: "/about",
 });
-
-const materialPalette = [
-  {
-    name: "Espresso Earth",
-    hex: "#261C16",
-    role: "Primary Dark Foundation",
-    description: "Extracted from exterior signage fascia, arched door casings, and walnut tables.",
-  },
-  {
-    name: "Adobe Mauve",
-    hex: "#8D6E66",
-    role: "Architectural Curve Accent",
-    description: "Extracted from sculpted interior ceiling arches and recessed wall alcoves.",
-  },
-  {
-    name: "Celosia Biscuit",
-    hex: "#DBC5A6",
-    role: "Secondary Warm Neutral",
-    description: "Extracted from kiln-fired triangular breeze blocks filtering Gujarat daylight.",
-  },
-  {
-    name: "Oatmeal Plaster",
-    hex: "#F8F5EE",
-    role: "Primary Light Canvas",
-    description: "Extracted from textured lime-wash walls and printed physical menu paper stock.",
-  },
-  {
-    name: "Sage Ceramic",
-    hex: "#5F7355",
-    role: "Botanical Food Accent",
-    description: "Extracted from handmade organic taco platters, fresh avocados, and herbs.",
-  },
-  {
-    name: "Warm Amber Glow",
-    hex: "#F5D48A",
-    role: "Atmospheric Illumination",
-    description: "Extracted from backlit exterior lettering and cordless tabletop LED lamps.",
-  },
-];
 
 export default function AboutPage() {
   return (
@@ -330,54 +292,8 @@ export default function AboutPage() {
         </Container>
       </Section>
 
-      {/* 5. Chapter 04: The Material Palette */}
-      <Section spacing="standard" background="primary" className="border-b border-[#261C16]/10">
-        <Container size="wide">
-          <div className="text-center max-w-2xl mx-auto space-y-4 mb-14">
-            <span className="font-[family-name:var(--font-syne)] text-[10px] uppercase tracking-[0.24em] font-bold text-[#8D6E66]">
-              CHAPTER 04 · MATERIALITY
-            </span>
-            <Heading as="h2" size="display" className="text-[#261C16]">
-              The Physical Palette
-            </Heading>
-            <Text tone="muted" size="base" className="leading-relaxed">
-              Every color in our digital and physical world is extracted directly from the tactile materials that shape Guac N&apos; Roll Cafe.
-            </Text>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {materialPalette.map((item) => (
-              <div
-                key={item.hex}
-                className="p-6 rounded-2xl bg-[#EFE8DC]/40 border border-[#261C16]/10 space-y-4"
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-10 h-10 rounded-xl border border-black/10 shrink-0 shadow-sm"
-                    style={{ backgroundColor: item.hex }}
-                  />
-                  <div>
-                    <h3 className="font-semibold text-sm text-[#261C16]">
-                      {item.name}
-                    </h3>
-                    <span className="font-mono text-xs text-[#7D6F66]">
-                      {item.hex}
-                    </span>
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-[#8D6E66] block font-[family-name:var(--font-syne)]">
-                    {item.role}
-                  </span>
-                  <p className="text-xs text-[#52463E] leading-relaxed">
-                    {item.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </Section>
+      {/* 5. Chapter 04: The Host — owner information (see src/data/owner.ts) */}
+      <OwnerSection />
 
       {/* 6. Honest Brand Integrity Statement & Visit CTA */}
       <Section spacing="standard" background="inset" className="border-b border-[#261C16]/10">
